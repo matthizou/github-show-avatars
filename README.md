@@ -1,13 +1,15 @@
 # Github Show Avatars
 
+> Beware: You are going to see your colleagues' faces... even more."
+
 Github is **awesome**... and yet sometimes you wish for a cooler UX, especially compared to its little brother Bitbucket.  
 Maybe you are used to look at the long lists of pull requests of your team, several times a day, and sometimes you are struggling to spot who created what - the small author text doesn't really stand out !
 
-Well, good news, You shall no longer put up with this awkwardness.
+Well, good news, You shall no longer put up with this.
 
 This userscript will display a **large avatar picture** in each row, in lists such as pull requests and issues.
 
-> The hell with the compact mode, I have a 27'' monitor after all !"
+> The hell with compact display, I have a 27'' monitor after all !"
 
 Doesn't it look better like this ?!
 
@@ -15,12 +17,17 @@ Doesn't it look better like this ?!
 
 ## Getting Started
 
-### Prerequisites
+### What is a userscript ?
+
+**Userscripts** are little scripts injected in web pages to improve them. See them as addons, or extensions, (usually) scoped to pages or sites.  
+Adding features/information, changing UI, hidding undesired ads, are typical examples of what they usually do.
+
+### Prerequisite
 
 The application is has been tested/styled on the latest version of Chrome. (It should also work with Firefox)
 
-Your browser needs be able to run userscripts.
-For this, install the [Tampermonkey extension](https://tampermonkey.net/?ext=dhdg&browser=chrome)
+In order for your browser to run userscripts, you need to install a userscript manager extension. I recommand **Tampermonkey**  
+Install the [Tampermonkey extension](https://tampermonkey.net/?ext=dhdg&browser=chrome)
 
 ### Installation
 
@@ -28,7 +35,7 @@ Go to this url: [/matthizou/github-show-avatars/raw/master/main.user.js](https:/
 Tampermonkey will pick up the fact that you are displaying a raw userscript and will ask you if you want to install the script.  
 Click the **install** button.
 
-<img src="images/userscript-installation.png" width="500">
+<img src="images/userscript-installation.png" width="600">
 
 ### Notes
 
