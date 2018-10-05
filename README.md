@@ -20,7 +20,7 @@ Doesn't it look better like this ?!
 ### What is a userscript ?
 
 **Userscripts** are little scripts injected in web pages to improve them. See them as addons, or extensions, (usually) scoped to pages or sites.  
-Adding features/information, changing UI, hidding undesired ads, are typical examples of what they usually do.
+Adding features/information, changing UI, hiding undesired ads, are typical examples of what they usually do.
 
 ### Prerequisite
 
