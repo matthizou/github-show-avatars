@@ -7,6 +7,7 @@
 // @license      MIT
 // @match        https://source.xing.com/*
 // @match        https://github.com/*
+// @grant        GM.getValue
 // ==/UserScript==
 
 ;(async function() {
@@ -37,7 +38,9 @@
             // Make container a bit bigger to accomodate the new stuff
             $('.container')[0].style.width = '1080px'
 
-            const tooltipUrlRegex = /user_id=([0-9]+)/
+            const USER_ID_REGEX = /user_id=([0-9]+)/
+            let userCustomizations = await GM.getValue('user_customizations')
+            userCustomizations = userCustomizations || {}
 
             // Loop through the rows
             $('.repository-content li[data-id]').forEach(row => {
@@ -45,11 +48,17 @@
                 const authorTag = row.querySelector('.opened-by a')
                 const authorName = authorTag.innerHTML
 
-                const avatarId = tooltipUrlRegex.exec(authorTag.dataset.hovercardUrl)[1]
-                const avatarUrl = `https://avatars1.githubusercontent.com/u/${avatarId}`
+                const customizations = userCustomizations[authorName] || {}
+                let avatarUrl
+                if (customizations.url) {
+                    avatarUrl = customizations.url
+                } else {
+                    const avatarId = USER_ID_REGEX.exec(authorTag.dataset.hovercardUrl)[1]
+                    avatarUrl = `https://avatars1.githubusercontent.com/u/${avatarId}`
+                }
 
                 // Create avatar image and its container
-                const img = createAvatarImage(avatarUrl, authorName)
+                const img = createAvatarImage(avatarUrl, authorName, customizations)
                 const imgContainer = document.createElement('div')
                 imgContainer.className = 'float-left pl-3 py-2'
                 imgContainer.appendChild(img)
@@ -95,7 +104,7 @@
         })
     }
 
-    function createAvatarImage(url, username) {
+    function createAvatarImage(url, username, options = {}) {
         let img
         if (url) {
             // Create avatar image from stored data
@@ -103,13 +112,21 @@
             img.src = `${url}?s=88`
             img.alt = username
             img.title = username
+            const { css } = options
+            img.style.width = '44px'
+            img.title = css
+            if (css) {
+                Object.entries(css).forEach(([key, value]) => {
+                    img.style[key] = value
+                })
+            }
         } else {
             // Use default avatar
             img = $('svg.octicon.octicon-mark-github')[0].cloneNode(true)
             img.dataset.avatarUnknown = true
+            img.style.width = '44px'
         }
         img.dataset.avatarUsername = username
-        img.style.width = '44px'
         return img
     }
 
