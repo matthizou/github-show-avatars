@@ -37,15 +37,9 @@ Click the **install** button.
 
 <img src="images/userscript-installation.png" width="600">
 
-### Notes
-
-The implementation has been kept simple and efficient, using a basic logic of scanning and storing the avatar urls in pull request pages. No extra server call is performed.
-
-Consequently, **the first time** this script is activated, all users will get the default unknown avatar; but after entering a few pull requests, the script will accumulate data and display the correct avatars.
-
 ## Authors
 
-- **Matthieu Izoulet**
+-   **Matthieu Izoulet**
 
 ## Acknowledgments
 
