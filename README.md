@@ -44,6 +44,8 @@ Click the **install** button.
 ## Acknowledgments
 
 Thanks to [Xing](https://www.xing.com/) for encouraging the development of this script. Hack weeks are awesome !
+  
+As Xing has its own variation of Github, the userscript has been forked to be used for the developers over there too. It is a been more hassle as the user ids aren't accessible from the PR list.
 
 ## Full-size screenshots
 

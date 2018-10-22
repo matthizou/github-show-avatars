@@ -1,13 +1,18 @@
 // ==UserScript==
-// @name         Github Show Avatars
+// @name         Show Avatars for xing.code. Just for Xing developers
 // @namespace    https://github.com/matthizou
 // @version      1.1
 // @description  Display avatars in lists (pull requests, issues), making easier to identify who created the item
 // @author       Matthieu Izoulet
 // @license      MIT
-// @match        https://github.com/*
+// @match        https://source.xing.com/*
 // @grant        GM.getValue
+// @grant        GM.setValue
 // ==/UserScript==
+
+// --------------
+// FOR XING DEVELOPER ONLY
+// --------------
 
 ;(async function() {
     'use strict'
@@ -17,6 +22,7 @@
     // MAIN LOGIC FUNCTIONS
     // -------------------
 
+    const CUSTOMIZATION_NAMESPACE = '🤖 Avatar Customizations'
     const selectorEnum = {
         LIST: '#js-issues-toolbar',
         DETAILS: '#discussion_bucket',
@@ -27,48 +33,66 @@
         // Element that signals that we are on such or such page
         let landmarkElement
 
-        if (isListPage()) {
+        const namespace = getRepoOwnerFromUrl()
+
+        if (url.indexOf('/pull/') !== -1) {
+            // ------------------------------------
+            // INDIVIDUAL PULL REQUEST DETAILS PAGE
+            // All the avatar images are analysed and, if found, new data is stored for later uses
+            // ------------------------------------
+
+            landmarkElement = await waitForUmarkedElement(selectorEnum.DETAILS)
+            const dataFromImages = $('img')
+                .filter(img => img.alt.startsWith('@'))
+                .map(getUserAvatarDataFromImage)
+
+            const uniqueUsernames = dataFromImages
+                .map(data => data.username)
+                .filter((value, index, array) => array.indexOf(value) === index)
+                .map(username => dataFromImages.find(item => item.username === username))
+
+            for (let i = 0, length = uniqueUsernames.length; i < length; i++) {
+                await updateAvatar(uniqueUsernames[i], namespace)
+            }
+        } else if (isListPage()) {
             // -------------------------------
             // PULL REQUESTS / ISSUES LIST PAGE
             // -------------------------------
-            landmarkElement = await waitForUnmarkedElement(selectorEnum.LIST)
+            landmarkElement = await waitForUmarkedElement(selectorEnum.LIST)
+
             markElement(landmarkElement)
 
             // Make container a bit bigger to accomodate the new stuff
             $('.container')[0].style.width = '1080px'
 
-            const USER_ID_REGEX = /user_id=([0-9]+)/
-            let userCustomizations = await GM.getValue('user_customizations')
-            userCustomizations = userCustomizations || {}
+            // Browse the pictures of the reviewers
+            $('.repository-content li img').forEach(img => {
+                updateAvatar(getUserAvatarDataFromImage(img), namespace)
+            })
+
+            const storedUsers = await getNamespaceData(namespace)
+            const allCustomizations = await getNamespaceData(CUSTOMIZATION_NAMESPACE)
 
             // Loop through the rows
-            $('.repository-content li[data-id]').forEach(row => {
-                const pullRequestId = row.id.replace('issue_', '')
-                const authorTag = row.querySelector('.opened-by a')
-                const authorName = authorTag.innerHTML
-
-                const customizations = userCustomizations[authorName] || {}
-                let avatarUrl
-                if (customizations.url) {
-                    avatarUrl = customizations.url
-                } else {
-                    const avatarId = USER_ID_REGEX.exec(authorTag.dataset.hovercardUrl)[1]
-                    avatarUrl = `https://avatars1.githubusercontent.com/u/${avatarId}`
-                }
+            $('.repository-content li[data-id]').forEach(li => {
+                const pullRequestId = li.id.replace('issue_', '')
+                const username = li.querySelector('.opened-by a').innerHTML
+                const customizations = allCustomizations[username] || {}
+                const avatarUrl = customizations.url || storedUsers[username]
 
                 // Create avatar image and its container
-                const img = createAvatarImage(avatarUrl, authorName, customizations)
+                const img = createAvatarImage(avatarUrl, username, customizations)
                 const imgContainer = document.createElement('div')
                 imgContainer.className = 'float-left pl-3 py-2'
                 imgContainer.appendChild(img)
 
                 // Reduce size of the last container of the row to avoid line wrapping
-                const rightContainer = row.querySelector('.float-right')
+                const rightContainer = li.querySelector('.float-right')
                 rightContainer.className =
                     rightContainer.className.replace('col-2', 'col-1') + 'pr-3'
 
                 // Insert avatar container in the row
-                const firstElementInRow = row.querySelector('.float-left')
+                const firstElementInRow = li.querySelector('.float-left')
                 if (firstElementInRow.querySelector('input[type="checkbox"]')) {
                     // Avatar added after the checkbox
                     insertAfter(imgContainer, firstElementInRow)
@@ -87,6 +111,51 @@
         return url.indexOf('/pulls') !== -1 || url.indexOf('/issues') !== -1
     }
 
+    /**
+     * Attempt to update the avatars of the unknown users.
+     * This function is typically called when browsing back in history, as more data may have been accumulated
+     */
+    async function updateListPage() {
+        const container = await waitFor(selectorEnum.LIST)
+        const namespace = getRepoOwnerFromUrl()
+        const unknownUsers = $('svg[data-avatar-unknown]')
+        if (unknownUsers.length) {
+            const namespaceData = await getNamespaceData(namespace)
+            const allCustomizations = await getNamespaceData(CUSTOMIZATION_NAMESPACE)
+
+            $('svg[data-avatar-unknown]').forEach(async unknownAvatarElement => {
+                const username = unknownAvatarElement.dataset.avatarUsername
+                const custimzationsForUser = allCustomizations[username] || {}
+                const url = custimzationsForUser.url || namespaceData[username]
+                if (url) {
+                    const img = createAvatarImage(url, username, custimzationsForUser)
+                    unknownAvatarElement.parentNode.replaceChild(img, unknownAvatarElement)
+                }
+            })
+        }
+    }
+
+    async function getNamespaceData(namespace) {
+        const namespaceData = await GM.getValue(namespace)
+        return namespaceData || {}
+    }
+
+    async function updateAvatar({ username, url }, namespace) {
+        const namespaceData = await getNamespaceData(namespace)
+        const currentUrl = namespaceData[username]
+        if (!currentUrl || currentUrl !== url) {
+            GM.setValue(namespace, { ...namespaceData, [username]: url })
+        }
+    }
+
+    function getUserAvatarDataFromImage(img) {
+        // Username: remove trailing '$'
+        const username = img.alt.replace(/^@/, '')
+        // url: remove querystring part
+        const url = img.src.replace(/\?\S+$/, '')
+        return { username, url }
+    }
+
     const PROCESSED_FLAG = '__AVATAR_EXTENSION_FLAG__'
 
     function markElement(element) {
@@ -97,21 +166,18 @@
         return element.dataset[PROCESSED_FLAG]
     }
 
-    async function waitForUnmarkedElement(selector) {
-        return await waitFor(selector, {
-            condition: element => !isMarked(element),
-        })
+    async function waitForUmarkedElement(selector) {
+        return await waitFor(selector, { condition: element => !isMarked(element) })
     }
 
     function createAvatarImage(url, username, options = {}) {
         let img
         if (url) {
-            // Create avatar image from stored data
+            const { css } = options
             img = document.createElement('img')
             img.src = `${url}?s=88`
             img.alt = username
             img.title = username
-            const { css } = options
             img.style.width = '44px'
             if (css) {
                 Object.entries(css).forEach(([key, value]) => {
@@ -129,7 +195,7 @@
     }
 
     // -------------------
-    // STARTUP BLOCK
+    // BOOTSTRAP BLOCK
     // -------------------
 
     // Process page
@@ -140,6 +206,13 @@
     history.pushState = function() {
         pushState.apply(history, arguments)
         applyExtension()
+    }
+
+    // Handle browser navigation changes (previous/forward button)
+    window.onpopstate = function(event) {
+        if (isListPage()) {
+            updateListPage()
+        }
     }
 
     // ---------------
@@ -158,6 +231,14 @@
     /** Insert in DOM the specified node right before the specified reference node */
     function insertBefore(newNode, referenceNode) {
         referenceNode.parentNode.insertBefore(newNode, referenceNode)
+    }
+
+    /**
+     * Extract the username of the repo owner from the url
+     * i.e: https://github.com/styleguidist/react-styleguidist/pulls ====> styleguidist
+     */
+    function getRepoOwnerFromUrl() {
+        return window.location.pathname.substr(1).match(/^[^\/]+/)[0]
     }
 
     /**
