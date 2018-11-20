@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Github Show Avatars
 // @namespace    https://github.com/matthizou
-// @version      1.1
+// @version      1.1.1
 // @description  Display avatars in lists (pull requests, issues), making easier to identify who created the item
 // @author       Matthieu Izoulet
 // @license      MIT
@@ -42,7 +42,7 @@
             userCustomizations = userCustomizations || {}
 
             // Loop through the rows
-            $('.repository-content li[data-id]').forEach(row => {
+            $('.repository-content [data-id]').forEach(row => {
                 const pullRequestId = row.id.replace('issue_', '')
                 const authorTag = row.querySelector('.opened-by a')
                 const authorName = authorTag.innerHTML
