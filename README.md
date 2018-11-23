@@ -2,7 +2,7 @@
 
 > Beware: You are going to see your colleagues' faces... even more."
 
-Github is **awesome**... and yet sometimes you wish for a cooler UX, especially compared to its little brother Bitbucket.  
+Github is **awesome**... and yet sometimes you wish for a cooler UX, especially compared to its little brother Bitbucket. (my humble opinion)  
 Maybe you are used to look at the long lists of pull requests of your team, several times a day, and sometimes you are struggling to spot who created what - the small author text doesn't really stand out !
 
 Well, good news, You shall no longer put up with this.
@@ -27,11 +27,11 @@ Adding features/information, changing UI, hiding undesired ads, are typical exam
 The application is has been tested/styled on the latest version of Chrome. (It should also work with Firefox)
 
 In order for your browser to run userscripts, you need to install a userscript manager extension. I recommand **Tampermonkey**  
-Install the [Tampermonkey extension](https://tampermonkey.net/?ext=dhdg&browser=chrome)
+Install the [Tampermonkey extension](https://chrome.google.com/webstore/detail/tampermonkey/dhdgffkkebhmkfjojejmpbldmpobfkfo)
 
 ### Installation
 
-Go to this url: [/matthizou/github-show-avatars/raw/master/main.user.js](https://github.com/matthizou/github-show-avatars/raw/master/main.user.js)  
+Go to this url: [https://github.com/matthizou/github-show-avatars/raw/master/main.user.js](https://github.com/matthizou/github-show-avatars/raw/master/main.user.js)  
 Tampermonkey will pick up the fact that you are displaying a raw userscript and will ask you if you want to install the script.  
 Click the **install** button.
 
@@ -44,7 +44,7 @@ Click the **install** button.
 ## Acknowledgments
 
 Thanks to [Xing](https://www.xing.com/) for encouraging the development of this script. Hack weeks are awesome !
-  
+
 As Xing has its own variation of Github, the userscript has been forked to be used for the developers over there too. It is a been more hassle as the user ids aren't accessible from the PR list.
 
 ## Full-size screenshots
