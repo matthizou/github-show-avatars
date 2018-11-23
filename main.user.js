@@ -87,7 +87,7 @@
         return url.indexOf('/pulls') !== -1 || url.indexOf('/issues') !== -1
     }
 
-    const PROCESSED_FLAG = GM.info.script.uuid
+    const PROCESSED_FLAG = 'avatar-extension-flag'
 
     function markElement(element) {
         element.dataset[PROCESSED_FLAG] = true
