@@ -74,7 +74,7 @@
             const allCustomizations = await getNamespaceData(CUSTOMIZATION_NAMESPACE)
 
             // Loop through the rows
-            $('.repository-content li[data-id]').forEach(li => {
+            $('.repository-content [data-id]').forEach(li => {
                 const pullRequestId = li.id.replace('issue_', '')
                 const username = li.querySelector('.opened-by a').innerHTML
                 const customizations = allCustomizations[username] || {}
