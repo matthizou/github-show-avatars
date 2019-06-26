@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Show Avatars for xing.code. Just for Xing developers
 // @namespace    https://github.com/matthizou
-// @version      1.1
+// @version      1.2
 // @description  Display avatars in lists (pull requests, issues), making easier to identify who created the item
 // @author       Matthieu Izoulet
 // @license      MIT
