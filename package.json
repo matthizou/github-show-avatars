@@ -1,0 +1,16 @@
+{
+    "name": "github-show-avatars",
+    "version": "1.0.0",
+    "main": "index.js",
+    "repository": "git@github.com:matthizou/github-show-avatars.git",
+    "author": "Matt Izoulet <matthieu.izoulet@xing.com>",
+    "license": "MIT",
+    "private": false,
+    "devDependencies": {
+        "eslint": "^6.8.0"
+    },
+    "scripts": {
+        "lint": "eslint ./extension",
+        "build": "node ./build.js"
+    }
+}

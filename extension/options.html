@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Github Show Avatars</title>
+        <style>
+            #error {
+                color: red;
+            }
+            #custom_url {
+                width: 250px;
+            }
+            input {
+                border-radius: 4px;
+                margin-right: 5px !important;
+            }
+            article {
+                width: 450px;
+            }
+            .username {
+                width: 100px;
+                text-align: right;
+                margin-right: 5px;
+            }
+            .custom-avatar-row {
+                display: flex;
+                align-items: center;
+            }
+
+            .mt10 {
+                margin-top: 10px;
+            }
+            .mb10 {
+                margin-bottom: 10px;
+            }
+            .mr5 {
+                margin-right: 5px;
+            }
+        </style>
+    </head>
+    <body>
+        <article>
+            <section id="avatars-section">
+                <p>
+                    Total number of currently recorded avatars urls: <b id="nbProfiles">-</b>
+                    <button id="btClearCache">Clear</button>
+                </p>
+                <p>
+                    The section below you to overwrite existing avatars with your own.<br />Have fun
+                    !
+                </p>
+                <div id="add-avatar-row" class="custom-avatar-row mb10">
+                    <input type="text" placeholder="Username" class="username" value="" />
+                    <input type="text" placeholder="Image URL" class="avatar-url" value="" />
+                    <img
+                        width="22"
+                        height="22"
+                        class="mr5"
+                        src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+P+/HgAFhAJ/wlseKgAAAABJRU5ErkJggg=="
+                    />
+                    <a href="#" id="btAddCustomAvatar">Add</a>
+                </div>
+                <div id="customizations"></div>
+            </section>
+            <script src="options.js"></script>
+        </article>
+    </body>
+</html>

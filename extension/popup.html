@@ -1,0 +1,40 @@
+<html>
+    <head>
+        <title>Github Show Avatars</title>
+    </head>
+    <style>
+        body {
+            background-color: #323232;
+            color: white;
+        }
+        article {
+            width: 250px;
+        }
+        .banner {
+            width: 150px;
+            margin-left: 50px;
+        }
+        #origin {
+            font-weight: bold;
+        }
+    </style>
+    <body>
+        <article>
+            <div class="banner">
+                <img src="./images/github-avatars128.png" id="logo" />
+            </div>
+            <div style="text-align: center;">
+                <h2>Github<br />Show Avatars</h2>
+                <h4 id="version"></h4>
+                <p id="origin"></p>
+                <p id="availability"></p>
+                <p id="goToOptions">
+                    To customize the avatars, right click the icon in the toolbar and choose
+                    "Options"
+                </p>
+                <button id="btGrant">Activate</button>
+            </div>
+        </article>
+        <script src="popup.js"></script>
+    </body>
+</html>

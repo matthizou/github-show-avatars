@@ -2,55 +2,35 @@
 
 > Beware: You are going to see your colleagues' faces... even more."
 
-Github is **awesome**... and yet sometimes you wish for a cooler UX, especially compared to its little brother Bitbucket. (my humble opinion)  
-Maybe you are used to look at the long lists of pull requests of your team, several times a day, and sometimes you are struggling to spot who created what - the small author text doesn't really stand out !
+This extension will display large avatar pictures in your pull requests and issues list in Github and Github Enterprise. Ideal to quickly identify who created a pull request in a second.
+This extension goes further and enables you to overwrite certain avatars by your own, which can bring both fun and better readability in the pages where it is applied.
+It can also display 2 avatars side-to-side, which is really helpful to signal the team that 2 people are taking care of an issue, or have paired together in the code of a pull request.
 
-Well, good news, You shall no longer put up with this.
+It supports Github Enterprise on any URL though a really simple process (simply click on the icon and then on "Activate" button)
 
-This userscript will display a **large avatar picture** in each row, in lists such as pull requests and issues.
+Try it, you won't be disappointed.
 
-> The hell with compact display, I have a 27'' monitor after all !"
-
-Doesn't it look better like this ?!
-
-<img src="images/processed-PR-list-2.png" width="800">
+<img src="extension/images/screenshots/overview-1.png" width="800">
 
 ## Getting Started
 
-### What is a userscript ?
+### Chrome extension
 
-**Userscripts** are little scripts injected in web pages to improve them. See them as addons, or extensions, (usually) scoped to pages or sites.  
-Adding features/information, changing UI, hiding undesired ads, are typical examples of what they usually do.
+1. Download the extension from the Chrome Web Store
 
-### Prerequisite
+2. Initially,the extension doesn't know the users' avatars. You'll need to do a quick session of "machine learning" in order to have the default Github avatars replaced by the proper ones.  
+   <img src="extension/images/screenshots/instructions-1.png" width="400">
 
-The application is has been tested/styled on the latest version of Chrome. (It should also work with Firefox)
+3. To apply the extension on your Github Enterprise, simply click the extension icon when you ar in your domain, and click the Activate button.  
+   <img src="extension/images/screenshots/popup-1.png" width="400">
 
-In order for your browser to run userscripts, you need to install a userscript manager extension. I recommand **Tampermonkey**  
-Install the [Tampermonkey extension](https://chrome.google.com/webstore/detail/tampermonkey/dhdgffkkebhmkfjojejmpbldmpobfkfo)
-
-### Installation
-
-Go to this url: [https://github.com/matthizou/github-show-avatars/raw/master/main.user.js](https://github.com/matthizou/github-show-avatars/raw/master/main.user.js)  
-Tampermonkey will pick up the fact that you are displaying a raw userscript and will ask you if you want to install the script.  
-Click the **install** button.
-
-<img src="images/userscript-installation.png" width="600">
-
-## Authors
-
--   **Matthieu Izoulet**
+4. To customize Avatars, right click on the icon, and select "Options". You will be brought to this popup  
+   <img src="extension/images/screenshots/instructions-3.png" width="300">
 
 ## Acknowledgments
 
-Thanks to [Xing](https://www.xing.com/) for encouraging the development of this script. Hack weeks are awesome !
+Thanks to [New Work](https://www.new-work.se/en/) for encouraging creativity and encouraging the development of this script. Hackweeks are awesome!
 
-As Xing has its own variation of Github, the userscript has been forked to be used for the developers over there too. It is a been more hassle as the user ids aren't accessible from the PR list.
+## Author
 
-## Full-size screenshots
-
-Issues list  
-<img src="images/processed-issues-list.png" width="800">
-
-Pull requests list  
-<img src="images/processed-PR-list.png" width="800">
+-   **Matthieu Izoulet**

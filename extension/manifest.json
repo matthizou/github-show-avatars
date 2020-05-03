@@ -1,0 +1,40 @@
+{
+  "name": "Github Show Avatar",
+  "version": "1.0.1",
+  "description": "Show avatars in pull requests and issue pages",
+  "manifest_version": 2,
+  "permissions": [
+    "storage",
+    "tabs",
+    "https://github.com/*",
+    "https://source.xing.com/*"
+  ],
+  "icons": {
+    "16": "images/github-avatars16.png",
+    "32": "images/github-avatars32.png",
+    "48": "images/github-avatars48.png",
+    "128": "images/github-avatars128.png"
+  },
+  "options_ui": {
+    "page": "options.html",
+    "chrome_style": true
+  },
+  "optional_permissions": [
+    "<all_urls>"
+  ],
+  "background": {
+    "scripts": [
+      "background.js"
+    ],
+    "persistent": false
+  },
+  "browser_action": {
+    "default_icon": {
+      "16": "images/github-avatars16.png",
+      "32": "images/github-avatars32.png",
+      "48": "images/github-avatars48.png",
+      "128": "images/github-avatars128.png"
+    },
+    "default_popup": "popup.html"
+  }
+}
