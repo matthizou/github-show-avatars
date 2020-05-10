@@ -64,9 +64,9 @@
             storedUsers = await getNamespaceData(namespace)
             const allCustomizations = await getNamespaceData(CUSTOMIZATION_NAMESPACE)
 
-            console.log('storedUsers:', storedUsers)
             // Loop through the rows
-            $('.repository-content [data-id]').forEach((li) => {
+            $('.repository-content div[data-id]').forEach((li) => {
+                if (!li.id.startsWith('issue_')) return
                 // Stretch the title area a bit in the Enterprise version
                 const titleLink = document.getElementById(`${li.id}_link`)
                 if (titleLink) {
