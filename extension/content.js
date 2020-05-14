@@ -1,6 +1,8 @@
 ;(async function () {
     'use strict'
 
+    // const seed = Math.floor(Math.random() * 100)
+    // console.log('Github Show Avatars', seed)
     // -------------------
     // MAIN LOGIC FUNCTIONS
     // -------------------
@@ -10,132 +12,141 @@
         LIST: '#js-issues-toolbar',
         DETAILS: '#discussion_bucket',
     }
-    // Maximum number of avatars in a row - ie: 4 people havec been assigned to am issue
+    // Maximum number of avatars that can be shown simultaneously on the same PR/issue
     const MAX_AVATARS = 2
 
     async function applyExtension() {
-        const url = window.location.pathname
-        // Element that signals that we are on such or such page
-        let landmarkElement
+        try {
+            // Element that signals that we are on such or such page
+            let landmarkElement
 
-        const namespace = getRepoOwnerFromUrl()
-        let storedUsers
+            const urlData = getInfoFromUrl()
+            const namespace = urlData.repoOwner
+            let storedUsers
 
-        if (url.indexOf('/pull/') !== -1) {
-            // ------------------------------------
-            // INDIVIDUAL PULL REQUEST DETAILS PAGE
-            // All the avatar images are analysed and, if found, new data is stored for later uses
-            // ------------------------------------
-            landmarkElement = await waitForUmarkedElement(selectorEnum.DETAILS)
-            const dataFromImages = $('img')
-                .filter((img) => img.alt.startsWith('@'))
-                .map(getUserAvatarDataFromImage)
+            if (isDetailsPage(urlData)) {
+                // ------------------------------------
+                // Individual PR or Issue page
+                // That's where the "machine learning" is done
+                // All the avatar images are analysed and, if found, new data is stored for later uses
+                // ------------------------------------
+                landmarkElement = await waitForUmarkedElement(selectorEnum.DETAILS)
+                markElement(landmarkElement)
+                const dataFromImages = $('img')
+                    .filter((img) => img.alt.startsWith('@'))
+                    .map(getUserAvatarDataFromImage)
 
-            const uniqueUsernames = dataFromImages
-                .map((data) => data.username)
-                .filter((value, index, array) => array.indexOf(value) === index)
-                .map((username) => dataFromImages.find((item) => item.username === username))
+                const uniqueUsernames = dataFromImages
+                    .map((data) => data.username)
+                    .filter((value, index, array) => array.indexOf(value) === index)
+                    .map((username) => dataFromImages.find((item) => item.username === username))
 
-            storedUsers = await getNamespaceData(namespace)
-            let shouldUpdate = false
-            const updatedStoredUsers = uniqueUsernames.reduce((res, { username, url }) => {
-                const storedUrl = storedUsers[username]
-                if (storedUsers && storedUrl === url) {
-                    return res
+                storedUsers = await getNamespaceData(namespace)
+                let shouldUpdate = false
+                const updatedStoredUsers = uniqueUsernames.reduce((res, { username, url }) => {
+                    const storedUrl = storedUsers[username]
+                    if (storedUsers && storedUrl === url) {
+                        return res
+                    }
+                    shouldUpdate = true
+                    return {
+                        ...res,
+                        [username]: url,
+                    }
+                }, storedUsers)
+                if (shouldUpdate) {
+                    chrome.storage.local.set({ [namespace]: updatedStoredUsers })
                 }
-                shouldUpdate = true
-                return {
-                    ...res,
-                    [username]: url,
-                }
-            }, storedUsers)
+            } else if (isListPage(urlData)) {
+                // -------------------------------
+                // PULL REQUESTS / ISSUES LIST PAGE
+                // -------------------------------
+                landmarkElement = await waitForUmarkedElement(selectorEnum.LIST)
+                markElement(landmarkElement)
 
-            if (shouldUpdate) {
-                chrome.storage.local.set({ [namespace]: updatedStoredUsers })
+                storedUsers = await getNamespaceData(namespace)
+                const allCustomizations = await getNamespaceData(CUSTOMIZATION_NAMESPACE)
+
+                // Loop through the rows
+                $('.repository-content div[data-id]').forEach((li) => {
+                    if (!li.id.startsWith('issue_')) return
+                    // Stretch the title area a bit in the Enterprise version
+                    const titleLink = document.getElementById(`${li.id}_link`)
+                    if (titleLink) {
+                        titleLink.parentNode.className = titleLink.parentNode.className.replace(
+                            'col-8',
+                            'col-9'
+                        )
+                    }
+
+                    const assignees = $('img.from-avatar', li)
+                        // Remove '@' at the beginning
+                        .map((image) => image.alt.slice(1))
+                        .slice(0, MAX_AVATARS)
+
+                    const usernames = assignees.length
+                        ? assignees
+                        : [li.querySelector('.opened-by a').innerHTML]
+
+                    const avatarsImgs = usernames.map((username) =>
+                        createAvatarImage(
+                            allCustomizations[username] || storedUsers[username],
+                            username
+                        )
+                    )
+                    if (usernames.length > 1) {
+                        avatarsImgs.forEach((img, index) => {
+                            if (img.tagName === 'IMG') {
+                                img.className += ` small-avatar ${
+                                    index > 0 ? ' additionnal-avatar' : ''
+                                }`
+                            }
+                        })
+                    }
+
+                    const imgContainer = document.createElement('div')
+                    imgContainer.className = 'avatar-container'
+                    avatarsImgs.forEach((img) => imgContainer.appendChild(img))
+
+                    const wrapper = Array.from(li.children).find(({ tagName }) => tagName === 'DIV')
+                    if (!wrapper || !wrapper.children.length) {
+                        return
+                    }
+
+                    // Reduce size of the last container of the row to avoid line wrapping
+                    // That only happens in Github enterprise
+                    const rightContainer = wrapper.querySelector('.float-right')
+                    if (rightContainer) {
+                        rightContainer.className = rightContainer.className.replace('col-3', '')
+                    }
+
+                    // Insert avatar container in the row
+                    const firstElementInRow = wrapper.children[0]
+                    if (firstElementInRow.querySelector('input[type="checkbox"]')) {
+                        // Avatar added after the checkbox
+                        insertAfter(imgContainer, firstElementInRow)
+                    } else {
+                        // No checkbox: Happens if the user doesn't have write permissions
+                        // Image added at the beginning of the line
+                        insertBefore(imgContainer, firstElementInRow)
+                    }
+                })
             }
-        } else if (isListPage()) {
-            // -------------------------------
-            // PULL REQUESTS / ISSUES LIST PAGE
-            // -------------------------------
-            landmarkElement = await waitForUmarkedElement(selectorEnum.LIST)
-
-            markElement(landmarkElement)
-
-            storedUsers = await getNamespaceData(namespace)
-            const allCustomizations = await getNamespaceData(CUSTOMIZATION_NAMESPACE)
-
-            // Loop through the rows
-            $('.repository-content div[data-id]').forEach((li) => {
-                if (!li.id.startsWith('issue_')) return
-                // Stretch the title area a bit in the Enterprise version
-                const titleLink = document.getElementById(`${li.id}_link`)
-                if (titleLink) {
-                    titleLink.parentNode.className = titleLink.parentNode.className.replace(
-                        'col-8',
-                        'col-9'
-                    )
-                }
-
-                const assignees = $('img.from-avatar', li)
-                    // Remove '@' at the beginning
-                    .map((image) => image.alt.slice(1))
-                    .slice(0, MAX_AVATARS)
-
-                const usernames = assignees.length
-                    ? assignees
-                    : [li.querySelector('.opened-by a').innerHTML]
-
-                const avatarsImgs = usernames.map((username) =>
-                    createAvatarImage(
-                        allCustomizations[username] || storedUsers[username],
-                        username
-                    )
-                )
-                if (usernames.length > 1) {
-                    avatarsImgs.forEach(
-                        (img, index) =>
-                            (img.className += ` small-avatar ${
-                                index > 0 ? ' additionnal-avatar' : ''
-                            }`)
-                    )
-                }
-
-                // const customizations = allCustomizations[username] || {}
-
-                const imgContainer = document.createElement('div')
-                imgContainer.className = 'avatar-container' //'float-left pl-2 py-2'
-                avatarsImgs.forEach((img) => imgContainer.appendChild(img))
-
-                const wrapper = Array.from(li.children).find(({ tagName }) => tagName === 'DIV')
-                if (!wrapper || !wrapper.children.length) {
-                    return
-                }
-
-                // Reduce size of the last container of the row to avoid line wrapping
-                // That only happens in Github enterprise
-                const rightContainer = wrapper.querySelector('.float-right')
-                if (rightContainer) {
-                    rightContainer.className = rightContainer.className.replace('col-3', '')
-                }
-
-                // Insert avatar container in the row
-                const firstElementInRow = wrapper.children[0]
-                if (firstElementInRow.querySelector('input[type="checkbox"]')) {
-                    // Avatar added after the checkbox
-                    insertAfter(imgContainer, firstElementInRow)
-                } else {
-                    // No checkbox: Happens if the user doesn't have write permissions
-                    // Image added at the beginning of the line
-                    insertBefore(imgContainer, firstElementInRow)
-                }
-            })
+            // eslint-disable-next-line no-empty
+        } catch (e) {
+            console.log('🙉')
         }
     }
 
     /** Check page url and returns whether or not we are in a list page (pull request/issues lists )*/
-    function isListPage() {
-        const url = window.location.pathname
-        return url.indexOf('/pulls') !== -1 || url.indexOf('/issues') !== -1
+    function isListPage(urlData) {
+        const { section, itemId } = urlData || getInfoFromUrl()
+        return section === 'pulls' || (section === 'issues' && !itemId)
+    }
+
+    function isDetailsPage(urlData) {
+        const { section, itemId } = urlData || getInfoFromUrl()
+        return section === 'pull' || (section === 'issues' && itemId)
     }
 
     /**
@@ -145,7 +156,7 @@
      */
     async function updateListPage() {
         await waitFor(selectorEnum.LIST)
-        const namespace = getRepoOwnerFromUrl()
+        const namespace = getInfoFromUrl().repoOwner
         const unknownUsers = $('svg[data-avatar-unknown]')
         if (unknownUsers.length) {
             const namespaceData = await getNamespaceData(namespace)
@@ -213,7 +224,7 @@
     }
 
     addStyle(`
-    .avatar-container { position: relative; float: left; padding: 8px; }
+    .avatar-container { position: relative; float: left; padding: 8px; display: flex; align-items: center; }
     .avatarImg { border-radius: 99px; width: 44px; }
     img.small-avatar { width: 33px; }
 `)
@@ -226,14 +237,16 @@
     applyExtension()
 
     // Ensure we rerun the page transform code when the route changes
-    const pushState = history.pushState
-    history.pushState = function () {
-        pushState.apply(history, arguments)
-        applyExtension()
-    }
+    // Note: This code is not necessary in the Chrome extension, as the background script
+    // takes care of that
+    // const pushState = history.pushState
+    // history.pushState = function () {
+    //     console.log('Push state')
+    //     pushState.apply(history, arguments)
+    //     applyExtension()
+    // }
 
     // Handle browser navigation changes (previous/forward button)
-    // Only used in Github Enterprise (SPA)
     window.onpopstate = function () {
         if (isListPage()) {
             updateListPage()
@@ -270,8 +283,19 @@
      * Extract the username of the repo owner from the url
      * i.e: https://github.com/styleguidist/react-styleguidist/pulls ====> styleguidist
      */
-    function getRepoOwnerFromUrl() {
-        return window.location.pathname.substr(1).match(/^[^\/]+/)[0]
+    // function getRepoOwnerFromUrl() {
+    //     return window.location.pathname.substr(1).match(/^[^\/]+/)[0]
+    // }
+
+    /** Breakdown Github's URL into data */
+    function getInfoFromUrl() {
+        const [repoOwner, repo, section, itemId] = window.location.pathname.substr(1).split('/')
+        return {
+            repoOwner,
+            repo,
+            section,
+            itemId,
+        }
     }
 
     /**
@@ -280,7 +304,7 @@
      * @return {Promise}
      */
     function waitFor(selector, options = {}) {
-        const SEARCH_THRESHOLD = 200
+        const SEARCH_THRESHOLD = 80
         const INTERVAL = 100
         const { condition } = options
         let iterationCount = 0

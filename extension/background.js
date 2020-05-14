@@ -20,7 +20,7 @@ const hasPermission = (domain) =>
     )
 
 chrome.tabs.onUpdated.addListener(async function (tabId, changeInfo, tab) {
-    if (changeInfo.status !== 'loading' || !tab || !tab.url) {
+    if (changeInfo.status !== 'complete' || !tab || !tab.url || tab.url === 'chrome://newtab/') {
         return
     }
     const url = new URL(tab.url)
@@ -47,15 +47,16 @@ chrome.tabs.onActivated.addListener(async () => {
         path: './images/github-avatars16_disabled.png',
     })
     const [currentTab] = await getCurrentTab()
+
     let url = null
     try {
         url = new URL(currentTab.url)
         // eslint-disable-next-line no-empty
     } catch (e) {
-        console.log('Unable to retrieve active tab info or to parse current tab url')
+        console.log('Unable to retrieve active tab info or to parse current tab url', currentTab)
     }
 
-    if (!url) return
+    if (!url || url.origin === 'chrome://newtab') return
 
     const origin = url.origin + '/*'
 
