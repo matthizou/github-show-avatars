@@ -207,19 +207,12 @@
 
     function createAvatarImage(url, username) {
         let img
-        if (url) {
-            img = document.createElement('img')
-            img.src = `${url}?s=88`
-            img.className = 'avatarImg'
-            img.alt = username
-            img.title = username
-        } else {
-            // Use default avatar
-            img = $('svg.octicon.octicon-mark-github')[0].cloneNode(true)
-            img.style.width = '44px'
-            img.dataset.avatarUnknown = true
-        }
-        img.dataset.avatarUsername = username
+        img = document.createElement('img');
+        img.src = `https://github.com/${username}.png?size=88`;
+        img.className = 'avatarImg';
+        img.alt = username;
+        img.title = username;
+        img.dataset.avatarUsername = username;
         return img
     }
 
