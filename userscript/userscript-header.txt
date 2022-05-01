@@ -1,8 +1,0 @@
-// @name         Github Show Avatars
-// @description  Display avatars in lists (pull requests, issues), making easier to identify who created the item
-// @namespace    https://github.com/matthizou
-// @author       Matthieu Izoulet
-// @license      MIT
-// @include     /^https?:\/\/[^\/]*github[^\/]*\/.*/
-// @grant        GM.getValue
-// @grant        GM.setValue

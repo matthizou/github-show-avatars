@@ -3,6 +3,10 @@
 
     // const seed = Math.floor(Math.random() * 100)
     // console.log('Github Show Avatars', seed)
+
+    const isGithub = window.location.host === 'github.com'
+    const useLocalCache = !isGithub // For Github Enterprise
+
     // -------------------
     // MAIN LOGIC FUNCTIONS
     // -------------------
@@ -22,9 +26,10 @@
 
             const urlData = getInfoFromUrl()
             const namespace = urlData.repoOwner
-            let storedUsers
+            let storedUsers = []
 
             if (isDetailsPage(urlData)) {
+                if (!useLocalCache) return
                 // ------------------------------------
                 // Individual PR or Issue page
                 // That's where the "machine learning" is done
@@ -64,7 +69,9 @@
                 landmarkElement = await waitForUmarkedElement(selectorEnum.LIST)
                 markElement(landmarkElement)
 
-                storedUsers = await getNamespaceData(namespace)
+                if (useLocalCache) {
+                    storedUsers = await getNamespaceData(namespace)
+                }
                 const allCustomizations = await getNamespaceData(CUSTOMIZATION_NAMESPACE)
 
                 // Loop through the rows
@@ -88,12 +95,13 @@
                         ? assignees
                         : [li.querySelector('.opened-by a').innerHTML]
 
-                    const avatarsImgs = usernames.map((username) =>
-                        createAvatarImage(
-                            allCustomizations[username] || storedUsers[username],
-                            username
-                        )
-                    )
+                    const avatarsImgs = usernames.map((username) => {
+                        const avatarUrl = useLocalCache
+                            ? storedUsers[username]
+                            : `https://github.com/${username}.png`
+                        return createAvatarImage(allCustomizations[username] || avatarUrl, username)
+                    })
+
                     if (usernames.length > 1) {
                         avatarsImgs.forEach((img, index) => {
                             if (img.tagName === 'IMG') {
@@ -155,6 +163,7 @@
      * Note that this is only used in Github Enterprise (SPA)
      */
     async function updateListPage() {
+        if (!useLocalCache) return
         await waitFor(selectorEnum.LIST)
         const namespace = getInfoFromUrl().repoOwner
         const unknownUsers = $('svg[data-avatar-unknown]')
@@ -236,16 +245,6 @@
     // Process page
     applyExtension()
 
-    // Ensure we rerun the page transform code when the route changes
-    // Note: This code is not necessary in the Chrome extension, as the background script
-    // takes care of that
-    // const pushState = history.pushState
-    // history.pushState = function () {
-    //     console.log('Push state')
-    //     pushState.apply(history, arguments)
-    //     applyExtension()
-    // }
-
     // Handle browser navigation changes (previous/forward button)
     window.onpopstate = function () {
         if (isListPage()) {
@@ -278,14 +277,6 @@
         style.innerHTML = css
         document.getElementsByTagName('head')[0].appendChild(style)
     }
-
-    /**
-     * Extract the username of the repo owner from the url
-     * i.e: https://github.com/styleguidist/react-styleguidist/pulls ====> styleguidist
-     */
-    // function getRepoOwnerFromUrl() {
-    //     return window.location.pathname.substr(1).match(/^[^\/]+/)[0]
-    // }
 
     /** Breakdown Github's URL into data */
     function getInfoFromUrl() {

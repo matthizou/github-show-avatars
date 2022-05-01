@@ -2,7 +2,6 @@ const fs = require('fs')
 
 const cwd = process.cwd()
 const manifestPath = './extension/manifest.json'
-// const userscriptPath = './userscript/userscript.user.js'
 
 try {
     const manifest = require(manifestPath)
@@ -21,35 +20,19 @@ try {
     const newManifestContent = JSON.stringify(manifest, null, 2)
     fs.writeFileSync(manifestPath, newManifestContent)
 
-    // Generate userscript
-    // fs.writeFileSync(userscriptPath, generateUserscript(newVersion))
-
     createExtensionArchive(newVersion)
 } catch (err) {
     console.error(`  Details: ${err}`)
 }
 
-// function generateUserscript(newVersion) {
-//     const logic = fs.readFileSync('./extension/content.js')
-//     const header = fs.readFileSync('./userscript/userscript-header.txt')
-//     return [
-//         '// ==UserScript==',
-//         header,
-//         `// @version      ${newVersion}`,
-//         '// ==/UserScript==',
-//         '',
-//         logic,
-//     ].join('\n')
-// }
-
 // Works for mac users only
 function createExtensionArchive(newVersion) {
     const child_process = require('child_process')
-    child_process.execSync(`rm -f build/extension*`, {
+    child_process.execSync(`rm -f dist/extension*`, {
         cwd,
     })
     child_process.execSync(
-        `zip -r build/extension_${newVersion}.zip extension/ -x extension/images/screenshots/*`,
+        `zip -r extension_${newVersion}.zip extension/ -x extension/images/screenshots/*`,
         {
             cwd,
         }

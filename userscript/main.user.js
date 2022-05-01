@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Github Show Avatars
 // @namespace    https://github.com/matthizou
-// @version      1.1.2
+// @version      1.2
 // @description  Display avatars in lists (pull requests, issues), making easier to identify who created the item
 // @author       Matthieu Izoulet
 // @license      MIT
@@ -9,7 +9,7 @@
 // @grant        GM.getValue
 // ==/UserScript==
 
-;(async function() {
+;(async function () {
     'use strict'
     console.log('Starting extension: Github Show Avatars')
 
@@ -35,15 +35,13 @@
             markElement(landmarkElement)
 
             // Make container a bit bigger to accomodate the new stuff
-            $('.container')[0].style.width = '1080px'
+            // $('.container')[0].style.width = '1080px'
 
-            const USER_ID_REGEX = /user_id=([0-9]+)/
             let userCustomizations = await GM.getValue('user_customizations')
             userCustomizations = userCustomizations || {}
 
             // Loop through the rows
-            $('.repository-content [data-id]').forEach(row => {
-                const pullRequestId = row.id.replace('issue_', '')
+            $('.repository-content [data-id]').forEach((row) => {
                 const authorTag = row.querySelector('.opened-by a')
                 const authorName = authorTag.innerHTML
 
@@ -52,8 +50,7 @@
                 if (customizations.url) {
                     avatarUrl = customizations.url
                 } else {
-                    const avatarId = USER_ID_REGEX.exec(authorTag.dataset.hovercardUrl)[1]
-                    avatarUrl = `https://avatars1.githubusercontent.com/u/${avatarId}`
+                    avatarUrl = `https://github.com/${authorName}.png`
                 }
 
                 // Create avatar image and its container
@@ -62,13 +59,18 @@
                 imgContainer.className = 'float-left pl-3 py-2'
                 imgContainer.appendChild(img)
 
+                // Get all elements in the row.
+                // The row itself has an inner wrapper
+                // The last element is actually a hidden A tag, we filter it out
+                const rowElements = Array.from(row.children[0].children).filter(
+                    (el) => el.tagName !== 'A'
+                )
                 // Reduce size of the last container of the row to avoid line wrapping
-                const rightContainer = row.querySelector('.float-right')
-                rightContainer.className =
-                    rightContainer.className.replace('col-2', 'col-1') + 'pr-3'
+                const lastElement = rowElements[rowElements.length - 1]
+                lastElement.className = lastElement.className.replace('col-3', 'col-2') + 'pr-3'
 
                 // Insert avatar container in the row
-                const firstElementInRow = row.querySelector('.float-left')
+                const firstElementInRow = rowElements[0]
                 if (firstElementInRow.querySelector('input[type="checkbox"]')) {
                     // Avatar added after the checkbox
                     insertAfter(imgContainer, firstElementInRow)
@@ -99,7 +101,7 @@
 
     async function waitForUnmarkedElement(selector) {
         return await waitFor(selector, {
-            condition: element => !isMarked(element),
+            condition: (element) => !isMarked(element),
         })
     }
 
@@ -137,7 +139,7 @@
 
     // Ensure we rerun the page transform code when the route changes
     const pushState = history.pushState
-    history.pushState = function() {
+    history.pushState = function () {
         pushState.apply(history, arguments)
         applyExtension()
     }
