@@ -41,7 +41,7 @@
             userCustomizations = userCustomizations || {}
 
             // Loop through the rows
-            $('.repository-content [data-id]').forEach((row) => {
+            $('.application-main [data-id]').forEach((row) => {
                 const authorTag = row.querySelector('.opened-by a')
                 const authorName = authorTag.innerHTML
 
