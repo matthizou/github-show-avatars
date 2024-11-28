@@ -75,7 +75,7 @@
                 const allCustomizations = await getNamespaceData(CUSTOMIZATION_NAMESPACE)
 
                 // Loop through the rows
-                $('.repository-content div[data-id]').forEach((li) => {
+                $('.application-main div[data-id]').forEach((li) => {
                     if (!li.id.startsWith('issue_')) return
                     // Stretch the title area a bit in the Enterprise version
                     const titleLink = document.getElementById(`${li.id}_link`)
