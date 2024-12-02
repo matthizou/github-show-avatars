@@ -89,7 +89,7 @@
         return url.indexOf('/pulls') !== -1 || url.indexOf('/issues') !== -1
     }
 
-    const PROCESSED_FLAG = 'avatar-extension-flag'
+    const PROCESSED_FLAG = '__AVATAR_EXTENSION_FLAG__'
 
     function markElement(element) {
         element.dataset[PROCESSED_FLAG] = true

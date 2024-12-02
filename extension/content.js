@@ -4,9 +4,6 @@
     // const seed = Math.floor(Math.random() * 100)
     // console.log('Github Show Avatars', seed)
 
-    const isGithub = window.location.host === 'github.com'
-    const useLocalCache = !isGithub // For Github Enterprise
-
     // -------------------
     // MAIN LOGIC FUNCTIONS
     // -------------------
@@ -25,66 +22,19 @@
             let landmarkElement
 
             const urlData = getInfoFromUrl()
-            const namespace = urlData.repoOwner
-            let storedUsers = []
 
-            if (isDetailsPage(urlData)) {
-                if (!useLocalCache) return
-                // ------------------------------------
-                // Individual PR or Issue page
-                // That's where the "machine learning" is done
-                // All the avatar images are analysed and, if found, new data is stored for later uses
-                // ------------------------------------
-                landmarkElement = await waitForUmarkedElement(selectorEnum.DETAILS)
-                markElement(landmarkElement)
-                const dataFromImages = $('img')
-                    .filter((img) => img.alt.startsWith('@'))
-                    .map(getUserAvatarDataFromImage)
-
-                const uniqueUsernames = dataFromImages
-                    .map((data) => data.username)
-                    .filter((value, index, array) => array.indexOf(value) === index)
-                    .map((username) => dataFromImages.find((item) => item.username === username))
-
-                storedUsers = await getNamespaceData(namespace)
-                let shouldUpdate = false
-                const updatedStoredUsers = uniqueUsernames.reduce((res, { username, url }) => {
-                    const storedUrl = storedUsers[username]
-                    if (storedUsers && storedUrl === url) {
-                        return res
-                    }
-                    shouldUpdate = true
-                    return {
-                        ...res,
-                        [username]: url,
-                    }
-                }, storedUsers)
-                if (shouldUpdate) {
-                    chrome.storage.local.set({ [namespace]: updatedStoredUsers })
-                }
-            } else if (isListPage(urlData)) {
+            if (isListPage(urlData)) {
                 // -------------------------------
                 // PULL REQUESTS / ISSUES LIST PAGE
                 // -------------------------------
                 landmarkElement = await waitForUmarkedElement(selectorEnum.LIST)
                 markElement(landmarkElement)
 
-                if (useLocalCache) {
-                    storedUsers = await getNamespaceData(namespace)
-                }
                 const allCustomizations = await getNamespaceData(CUSTOMIZATION_NAMESPACE)
 
                 // Loop through the rows
                 $('.application-main div[data-id]').forEach((li) => {
                     if (!li.id.startsWith('issue_')) return
-                    // Stretch the title area a bit in the Enterprise version
-                    const titleLink = document.getElementById(`${li.id}_link`)
-                    if (titleLink) {
-                        titleLink.parentNode.className = titleLink.parentNode.className.replace(
-                            'col-8',
-                            'col-9'
-                        )
-                    }
 
                     const assignees = $('img.from-avatar', li)
                         // Remove '@' at the beginning
@@ -96,9 +46,7 @@
                         : [li.querySelector('.opened-by a').innerHTML]
 
                     const avatarsImgs = usernames.map((username) => {
-                        const avatarUrl = useLocalCache
-                            ? storedUsers[username]
-                            : `https://github.com/${username}.png`
+                        const avatarUrl = `https://github.com/${username}.png`
                         return createAvatarImage(allCustomizations[username] || avatarUrl, username)
                     })
 
@@ -121,13 +69,6 @@
                         return
                     }
 
-                    // Reduce size of the last container of the row to avoid line wrapping
-                    // That only happens in Github enterprise
-                    const rightContainer = wrapper.querySelector('.float-right')
-                    if (rightContainer) {
-                        rightContainer.className = rightContainer.className.replace('col-3', '')
-                    }
-
                     // Insert avatar container in the row
                     const firstElementInRow = wrapper.children[0]
                     if (firstElementInRow.querySelector('input[type="checkbox"]')) {
@@ -140,9 +81,8 @@
                     }
                 })
             }
-            // eslint-disable-next-line no-empty
         } catch (e) {
-            console.log('🙉')
+            // console.log('🙉', e)
         }
     }
 
@@ -152,36 +92,6 @@
         return section === 'pulls' || (section === 'issues' && !itemId)
     }
 
-    function isDetailsPage(urlData) {
-        const { section, itemId } = urlData || getInfoFromUrl()
-        return section === 'pull' || (section === 'issues' && itemId)
-    }
-
-    /**
-     * Attempt to update the avatars of the unknown users.
-     * This function is typically called when browsing back in history, as more data may have been accumulated.
-     * Note that this is only used in Github Enterprise (SPA)
-     */
-    async function updateListPage() {
-        if (!useLocalCache) return
-        await waitFor(selectorEnum.LIST)
-        const namespace = getInfoFromUrl().repoOwner
-        const unknownUsers = $('svg[data-avatar-unknown]')
-        if (unknownUsers.length) {
-            const namespaceData = await getNamespaceData(namespace)
-            const allCustomizations = await getNamespaceData(CUSTOMIZATION_NAMESPACE)
-
-            $('svg[data-avatar-unknown]').forEach(async (unknownAvatarElement) => {
-                const username = unknownAvatarElement.dataset.avatarUsername
-                const customizationsForUser = allCustomizations[username] || {}
-                const url = customizationsForUser.url || namespaceData[username]
-                if (url) {
-                    const img = createAvatarImage(url, username, customizationsForUser)
-                    unknownAvatarElement.parentNode.replaceChild(img, unknownAvatarElement)
-                }
-            })
-        }
-    }
 
     async function getNamespaceData(namespace) {
         return new Promise((resolve) => {
@@ -192,15 +102,7 @@
         })
     }
 
-    function getUserAvatarDataFromImage(img) {
-        // Username: remove trailing '$'
-        const username = img.alt.replace(/^@/, '')
-        // url: remove querystring part
-        const url = img.src.replace(/\?\S+$/, '')
-        return { username, url }
-    }
-
-    const PROCESSED_FLAG = '__AVATAR_EXTENSION_FLAG__'
+    const PROCESSED_FLAG = 'avatarExtensionFlag' // notes: it must be camel-cased, otherwise Chrome complains
 
     function markElement(element) {
         element.dataset[PROCESSED_FLAG] = true
@@ -232,12 +134,6 @@
         return img
     }
 
-    addStyle(`
-    .avatar-container { position: relative; float: left; padding: 8px; display: flex; align-items: center; }
-    .avatarImg { border-radius: 99px; width: 44px; }
-    img.small-avatar { width: 33px; }
-`)
-
     // -------------------
     // BOOTSTRAP BLOCK
     // -------------------
@@ -247,9 +143,6 @@
 
     // Handle browser navigation changes (previous/forward button)
     window.onpopstate = function () {
-        if (isListPage()) {
-            updateListPage()
-        }
     }
 
     // ---------------
@@ -268,14 +161,6 @@
     /** Insert in DOM the specified node right before the specified reference node */
     function insertBefore(newNode, referenceNode) {
         referenceNode.parentNode.insertBefore(newNode, referenceNode)
-    }
-
-    /** Insert css styles in a stylesheet injected in the head of the document */
-    function addStyle(css) {
-        const style = document.createElement('style')
-        style.type = 'text/css'
-        style.innerHTML = css
-        document.getElementsByTagName('head')[0].appendChild(style)
     }
 
     /** Breakdown Github's URL into data */

@@ -1,0 +1,3 @@
+.avatar-container { position: relative; float: left; padding: 8px; display: flex; align-items: center; }
+.avatarImg { border-radius: 99px; width: 44px; }
+img.small-avatar { width: 33px; }

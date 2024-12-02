@@ -1,19 +1,3 @@
-function displayStoredProfiles() {
-    // Count the number of profiles
-    chrome.storage.local.get(null, function (items) {
-        if (!items) return
-        const allProfiles = new Set()
-        Object.entries(items).forEach(([domain, profiles]) => {
-            if (domain === 'custom_url' || domain === CUSTOMIZATION_NAMESPACE) return
-            Object.keys(profiles).forEach((name) => allProfiles.add(name))
-        })
-        document.getElementById('nbProfiles').innerHTML = allProfiles.size
-    })
-}
-
-function clearCache() {
-    chrome.storage.local.clear(displayStoredProfiles)
-}
 
 const CUSTOMIZATION_NAMESPACE = '__Avatar_customizations__'
 
@@ -82,8 +66,6 @@ async function addEventsForAddCustomAvatar() {
 }
 
 function init() {
-    document.getElementById('btClearCache').addEventListener('click', clearCache)
-    displayStoredProfiles()
     displayAvatarOverwrites()
     addEventsForAddCustomAvatar()
 }
