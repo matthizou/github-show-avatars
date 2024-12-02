@@ -1,12 +1,11 @@
 {
   "name": "Github Show Avatar",
-  "version": "1.0.4",
+  "version": "1.0.6",
   "description": "Show avatars in pull requests and issue pages",
   "manifest_version": 3,
   "permissions": [
     "storage",
     "tabs",
-    "activeTab",
     "scripting"
   ],
   "host_permissions": [
