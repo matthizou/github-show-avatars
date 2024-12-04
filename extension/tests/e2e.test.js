@@ -3,7 +3,8 @@ const puppeteer = require('puppeteer')
 const EXTENSION_PATH = './extension'
 const PR_URL = 'https://github.com/facebook/react/pulls'
 const ISSUES_URL = 'https://github.com/facebook/react/issues'
-const MAX_PER_PAGE = 25
+// const MAX_PER_PAGE = 25
+const MAX_PER_PAGE = 13 // change to triger error
 
 let browser
 beforeEach(async () => {

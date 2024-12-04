@@ -27,3 +27,21 @@ jobs:
 
             - name: Run E2E Tests
               run: yarn e2e
+
+            # - name: Notify on Failure
+            #   if: failure() # Executes only if a previous step fails
+            #   uses: dawidd6/action-send-mail@v3
+            #   with:
+            #       server_address: smtp.gmail.com
+            #       server_port: 587
+            #       username: ${{ secrets.SMTP_USERNAME }}
+            #       password: ${{ secrets.SMTP_PASSWORD }}
+            #       subject: 'E2E Tests Failed in Repository: ${{ github.repository }}'
+            #       body: |
+            #           The E2E test suite failed.
+            #           Repository: ${{ github.repository }}
+            #           Workflow: ${{ github.workflow }}
+            #           Run: ${{ github.run_id }}
+            #           Please check the logs for details: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
+            #       to: matthizou@gmail.com
+            #       from: 'github-actions@example.com'

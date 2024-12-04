@@ -1,0 +1,29 @@
+name: Push Triggered Hello Email
+
+on:
+    push:
+        branches:
+            - 'e2e-send-emails'
+
+jobs:
+    send-email:
+        runs-on: ubuntu-latest
+
+        steps:
+            - name: Checkout Code
+              uses: actions/checkout@v4
+
+            - name: Send Hello World Email
+              uses: dawidd6/action-send-mail@v3
+              with:
+                  server_address: smtp.gmail.com
+                  server_port: 587
+                  username: ${{ secrets.SMTP_USERNAME }}
+                  password: ${{ secrets.SMTP_PASSWORD }}
+                  subject: 'Hello World Email from GitHub Actions'
+                  body: |
+                      This is a test email sent from a GitHub Actions workflow.
+                      Repository: ${{ github.repository }}
+                      Commit: ${{ github.sha }}
+                  to: matthizou@gmail.com
+                  from: 'github-actions@example.com'
