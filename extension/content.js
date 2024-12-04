@@ -122,7 +122,7 @@
             img = document.createElement('img')
             img.src = `${url}?s=88`
             img.className = 'avatarImg'
-            img.alt = username
+            img.alt = 'avatar'
             img.title = username
         } else {
             // Use default avatar
@@ -130,6 +130,7 @@
             img.style.width = '44px'
             img.dataset.avatarUnknown = true
         }
+        img.dataset.testid = 'avatar-image'
         img.dataset.avatarUsername = username
         return img
     }
