@@ -92,7 +92,6 @@
         return section === 'pulls' || (section === 'issues' && !itemId)
     }
 
-
     async function getNamespaceData(namespace) {
         return new Promise((resolve) => {
             chrome.storage.local.get(namespace, function (namespaceData) {
@@ -143,8 +142,7 @@
     applyExtension()
 
     // Handle browser navigation changes (previous/forward button)
-    window.onpopstate = function () {
-    }
+    window.onpopstate = function () {}
 
     // ---------------
     // UTIL FUNCTIONS

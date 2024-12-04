@@ -7,10 +7,11 @@
     "license": "MIT",
     "private": false,
     "devDependencies": {
-        "eslint": "^8.8.0"
+        "jest": "^29.7.0",
+        "puppeteer": "^23.10.0"
     },
     "scripts": {
-        "lint": "eslint ./extension",
-        "build": "node ./build.js"
+        "build": "node ./build.js",
+        "e2e": "jest extension/tests"
     }
 }
