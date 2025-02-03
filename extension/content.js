@@ -11,7 +11,8 @@
     const CUSTOMIZATION_NAMESPACE = '__Avatar_customizations__'
     const selectorEnum = {
         LIST: '#js-issues-toolbar',
-        DETAILS: '#discussion_bucket',
+        PULL_REQUESTS: '#js-issues-toolbar',
+        ISSUES: '#repository-results',
     }
     // Maximum number of avatars that can be shown simultaneously on the same PR/issue
     const MAX_AVATARS = 2
@@ -21,13 +22,21 @@
             // Element that signals that we are on such or such page
             let landmarkElement
 
-            const urlData = getInfoFromUrl()
+            const { section, itemId } = getInfoFromUrl()
+            if (itemId) {
+                return
+            }
+            if (section === 'issues') {
+                // The page was rewritten in January 2025 by the Github team and tags/ids are now completely different than the Pull Requests page
+                // Not yet supported by this extension
+                return
+            }
 
-            if (isListPage(urlData)) {
+            if (section === 'pulls') {
                 // -------------------------------
                 // PULL REQUESTS / ISSUES LIST PAGE
                 // -------------------------------
-                landmarkElement = await waitForUmarkedElement(selectorEnum.LIST)
+                landmarkElement = await waitForUmarkedElement(selectorEnum.PULL_REQUESTS)
                 markElement(landmarkElement)
 
                 const allCustomizations = await getNamespaceData(CUSTOMIZATION_NAMESPACE)
@@ -81,15 +90,7 @@
                     }
                 })
             }
-        } catch (e) {
-            // console.log('🙉', e)
-        }
-    }
-
-    /** Check page url and returns whether or not we are in a list page (pull request/issues lists )*/
-    function isListPage(urlData) {
-        const { section, itemId } = urlData || getInfoFromUrl()
-        return section === 'pulls' || (section === 'issues' && !itemId)
+        } catch (e) {}
     }
 
     async function getNamespaceData(namespace) {
@@ -179,7 +180,7 @@
      * @return {Promise}
      */
     function waitFor(selector, options = {}) {
-        const SEARCH_THRESHOLD = 80
+        const SEARCH_THRESHOLD = 50
         const INTERVAL = 100
         const { condition } = options
         let iterationCount = 0
