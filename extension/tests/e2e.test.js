@@ -12,6 +12,8 @@ beforeEach(async () => {
         args: [
             `--disable-extensions-except=${EXTENSION_PATH}`,
             `--load-extension=${EXTENSION_PATH}`,
+            '--no-sandbox',
+            '--disable-setuid-sandbox',
         ],
     })
 })
